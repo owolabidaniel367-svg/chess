@@ -1162,7 +1162,7 @@ function clearpiece() {
     delete squares[i][j].dataset.type
     delete squares[i][j].dataset.moved
     squares[i][j].innerHTML = " "
-      squares.classList.remove("Bad")
+      squares[i][j].classList.remove("Bad")
     }
     
   }
