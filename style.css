@@ -1,0 +1,293 @@
+html, body{
+    height: 100%;
+    margin: 0;
+}
+body{
+
+    background-image:url("background.jfif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+}
+#grid{
+    position: absolute;
+   
+    grid-template-columns: repeat(8,80px);
+    grid-template-rows: repeat(8,80px);
+   
+    transform: translate(-50%,-50%);
+    left: 50%;
+    top: 50%;
+    border: 3px solid black;
+     height: 640px;
+    width: 640px;
+     display: grid;
+    
+}
+
+.light{
+    background-color: #f0d9b5;
+
+
+}
+.dark{
+    background-color: #b58863;
+}
+.square{
+    position: relative;
+    font-size: 60px;
+    height: 80px;
+    width: 80px;
+    display: flex;
+    justify-content:center;
+    align-items:center;
+    
+    user-select:none;
+    cursor:pointer;
+    
+}
+.selected{
+    border: 1px
+    solid
+    black;
+}
+.options{
+     background-color: aqua;
+}
+.win{
+    background-color: rgb(56, 173, 56);
+}
+#analysis1{
+    
+    position: absolute;
+    
+    width: 400px;
+    top: 50%;
+    left: 0%;
+    transform: translateY(-50%);
+    background-color: #f5d7a8 ;
+    
+  
+     font-family: Arial, Helvetica, sans-serif;
+     font-size: 40px;
+     display: grid;
+    grid-template-columns: repeat(10,40px);
+    grid-template-rows: repeat(5,40px);
+}
+#analysis2{
+    
+    position: absolute;
+    
+    width: 400px;
+    top: 50%;
+    right: 0%;
+    transform: translateY(-50%);
+    background-color: #f5d7a8 ;
+    
+  
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 40px;
+    display: grid;
+      grid-template-columns: repeat(10,40px);
+    grid-template-rows: repeat(5,40px);
+}
+
+.boards{
+    background-image:url("board.jfif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 200px;
+    
+
+}
+.castling{
+    background-color: purple;
+}
+.Colortag{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+}
+.playerTags{
+     font-family: Arial, Helvetica, sans-serif;
+}
+.turn{
+    border: 5px solid #28a745;
+}
+.BlackBoard{
+    border: 5px solid black
+    ;
+}
+
+.WhiteBoard{
+
+ border: 5px solid white
+    ;
+}
+#White_Timer{
+    position: absolute;
+    border-radius: 2px;
+    bottom: 2%;
+    left: 2%;
+    height: 80px;
+    width: 150px;
+    background-color: white;
+    border-radius: 6px;
+     display: flex;
+    justify-content:center;
+    align-items:center;
+     font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:40px ;
+}
+#Black_Timer{
+    position: absolute;
+    border-radius: 2px;
+    top: 2%;
+    right: 2%;
+    height: 80px;
+    width: 150px;
+    background-color: white;
+    border-radius: 6px;
+     display: flex;
+    justify-content:center;
+    align-items:center;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:40px ;
+    
+}
+.Conatainer{
+    height: 40px;
+    width: 40px;
+    display: flex;
+    justify-content:center;
+    align-items:center;
+    
+    user-select:none;
+
+}
+
+.Bad{
+    background-color: red;
+}
+#GameoverBar{
+    position: absolute;
+    width: 700px;
+    height: 300px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 1;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 20px;
+    border: 7px solid #660000;
+    background-color: black;
+    padding: 4px;
+    font-size: 30px;
+     justify-content:center;
+     display: flex;
+     color: #ffffff;
+    visibility: hidden;
+   
+}
+#gamebody{
+ /* filter: blur(4px); */
+   transform: translate(-50%,-50%);
+    left: 50%;
+    top: 50%;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+#button{
+    height: 70px;
+    width: 200px;
+    position: absolute;
+    background-color: #660000;
+    bottom: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+transition: transform 0.4s ease, background-color 0.4s ease;
+cursor: pointer;
+}
+#span{
+    font-size: 70px;
+    font-weight: bolder;
+    font-family: Arial, Helvetica, sans-serif;
+}
+#button:hover {
+    background-color: #500101; 
+    transform: scale(1.1);
+ 
+
+}
+#message{
+ position: absolute;
+    font-size: 40px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    bottom: 130px;
+}
+
+.promote{
+    position: absolute;
+    height: 100px;
+    width: 330px;
+    border-radius: 3px;
+  visibility: hidden;
+    z-index: 1;
+  
+}
+#blackprom{
+    top: 20px;
+    left: 20px;
+    grid-template-columns: repeat(4,80px);
+   display: grid;
+    bottom: 20px;
+    right: 20px;
+      border: 10px solid black;
+    background-color: #e62121;
+    color: black;
+}
+#whiteprom{
+ /* grid-template-rows: repeat(4,80px); */
+ grid-template-columns: repeat(4,80px);
+   display: grid;
+    bottom: 20px;
+    right: 20px;
+      border: 10px solid #660000;
+    background-color: black;
+     color: white;
+}
+.prompiece{
+   position:relative;
+  display: flex;
+    align-items: center;
+    justify-content: center;
+ 
+ height:100px ;
+ width:80px;
+ font-size: 60px;
+
+ cursor: pointer;
+    
+
+
+}
+.whiteprompic:hover{
+   
+    transition: transform 0.4s ease, background-color 0.4s ease;
+    transform: scale(1.1);
+}
+.blackprompic:hover{
+    
+    transition: transform 0.4s ease, background-color 0.4s ease;
+    transform: scale(1.1);
+}
