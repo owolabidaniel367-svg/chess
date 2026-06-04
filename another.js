@@ -7,7 +7,10 @@ const btn = document.querySelector("#button")
 // btn.onclick = UI.Reset()
 const msg = document.getElementById("message")
 const grid = document.getElementById("grid")
-
+import { getBestMove,
+    piece
+ } from "./Default.js";
+let aiThinking = false; 
 let clicked
 let king
 let turn = true
@@ -122,18 +125,28 @@ const pieces = {
 // ==========================================================
 // SET PIECE
 // ==========================================================
+export function getSquares() {
+    return squares
+}
+function set(type, color, x, y, simulation = false) {
 
-function set(type,color,y,x,simulation=false){
+    if (
+        !Number.isInteger(x) ||
+        !Number.isInteger(y) ||
+        !pieces?.[color]?.[type] ||
+        !squares?.[x]?.[y]
+    ) {
+        console.error("BAD SET CALL:", { type, color, x, y });
+        return;
+    }
 
-    squares[y][x].dataset.type = type
-    squares[y][x].dataset.color = color
+    squares[x][y].dataset.type = type;
+    squares[x][y].dataset.color = color;
 
-    if(!simulation){
-
-        squares[y][x].innerHTML = pieces[color][type]
+    if (!simulation) {
+        squares[x][y].innerHTML = pieces[color][type];
     }
 }
-
 // ==========================================================
 // REMOVE PIECE
 // ==========================================================
@@ -346,12 +359,33 @@ UI.update();
 
 highlightCheck();
 getallmoves();
+triggerAI(); 
+
 }
 
 // ==========================================================
 // LINE MOVEMENT
 // ==========================================================
+function triggerAI() {
 
+    if (turn) return;
+    if (aiThinking) return;
+
+    aiThinking = true;
+
+    setTimeout(() => {
+
+        const boardState = getBoardState();
+        const bestMove = getBestMove(boardState);
+
+        if (bestMove) {
+            applyAIMove(bestMove);
+        }
+
+        aiThinking = false;
+
+    }, 300);
+}
 function line(x,y,straight,diagonal){
 
     let moves = []
@@ -615,7 +649,37 @@ function showMoves(board){
 // ==========================================================
 // GET ATTACK MOVES
 // ==========================================================
+function applyAIMove(move) {
 
+    if (!move) return;
+
+    if (
+        move.fromRow == null ||
+        move.fromCol == null ||
+        move.toRow == null ||
+        move.toCol == null
+    ) {
+        console.error("Bad AI move:", move);
+        return;
+    }
+
+    const from = squares[move.fromRow]?.[move.fromCol];
+    const to = squares[move.toRow]?.[move.toCol];
+
+    if (!from || !to) {
+        console.error("AI out-of-bounds move:", move);
+        return;
+    }
+
+    movePiece(
+        move.toRow,
+        move.toCol,
+        move.fromRow,
+        move.fromCol,
+        from.dataset.color,
+        from.dataset.type
+    );
+}
 function GetattackMoves(board){
 
     let color = board.dataset.color
@@ -763,7 +827,18 @@ function Iskingchecked(color){
 // ==========================================================
 // FILTER ILLEGAL MOVES
 // ==========================================================
+function getBoardState() {
+    return squares.map(row =>
+        row.map(square => {
+            const t = square.dataset.type;
+            const c = square.dataset.color;
 
+            if (!t || !c) return 0;
+            return piece[c][t];
+        })
+    );
+    
+}
 function blockIllegalMove(piece,moves){
 
     let legalMoves = []
