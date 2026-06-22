@@ -6,16 +6,19 @@ const gamecont = document.getElementById("gamebody")
 const btn = document.querySelector("#button")
 // btn.onclick = UI.Reset()
 const msg = document.getElementById("message")
+const msg2 = document.getElementById("button")
 const grid = document.getElementById("grid")
+let Gameover = false
+
 import { getBestMove,
     piece
- } from "./Default.js";
+ } from "./AI.js";
 let aiThinking = false; 
 let clicked
 let king
 let turn = true
 let pawnloc = [1,2]
-
+let seconds = 600
 const squares = []
 let options = []
 //===========================================================
@@ -348,7 +351,7 @@ if (squares[x1][y1].dataset.type === "pawn") {
     pawnloc[1] = y1;
 
     if (CheckPawnPromote(squares[x1][y1])) {
-
+          
         return;
     }
 }
@@ -1039,6 +1042,7 @@ function castle(x,y,dx){
     UI.update()
 
     highlightCheck()
+     triggerAI(); 
 }
 
 // ==========================================================
@@ -1046,27 +1050,31 @@ function castle(x,y,dx){
 // ==========================================================
 let message
 const UI = {
+    
 
-    BlackTimer: 300,
-    WhiteTimer: 300,
+    BlackTimer:  seconds,
+    WhiteTimer:  seconds,
 
 
   EndGame: function(message){
-     gameBar.style.visibility = "visible"
-     gamecont.style.filter = "blur(8px)"
+    
 
      UI.Message(message)
      for (let i = 0; i < 8; i++) {
      for (let j = 0; j < 8; j++) {
       squares[i][j].onclick = null
-      
+         
      }
-      
+      btn.onclick = UI.Startgame
      }
-     
+     Gameover = true
+    document.removeEventListener('keydown',logic)
     },
-    Message: function(message){
+    Message: function(message,message2="Play Again!"){
        msg.innerHTML = message
+       msg2.innerHTML = message2
+        gameBar.style.visibility = "visible"
+     gamecont.style.filter = "blur(8px)"
     },
    
 
@@ -1102,6 +1110,12 @@ const UI = {
             White_Timer.classList.add("WhiteBoard")
         }
     },
+    pause: function(){
+   UI.Message("Paused!","Continue")
+   stopTimer()
+    btn.onclick = UI.pausegame
+
+    },
 
     timer: function(){
 
@@ -1120,7 +1134,7 @@ const UI = {
             Black_Timer.innerHTML =
                 this.format(this.BlackTimer)
         }
-        if(this.BlackTimer == 0 || this.WhiteTimer == 0){
+        if(this.BlackTimer <= 0 || this.WhiteTimer <= 0){
             message = turn? "White lost by time":"Black lost by time"
           this.EndGame(message)
           stopTimer()
@@ -1134,12 +1148,29 @@ const UI = {
 
         return `${min}:${sec < 10 ? "0" : ""}${sec}`
     },
+    pausegame: function(){
+          startTimer()
+            // Hide game over screen
+    gameBar.style.visibility = "hidden";
+
+    // Remove blur
+    gamecont.style.filter = "blur(0px)";
+     for (let i = 0; i < 8; i++) {
+
+        for (let j = 0; j < 8; j++) {
+
+            squares[i][j].onclick =
+                handleclick;
+        }
+    }
+    },
+    
 Startgame: function() {
   stopTimer();
 
     // Reset timers first
-    UI.BlackTimer = 300;
-    UI.WhiteTimer = 300;
+    UI.BlackTimer =  seconds
+    UI.WhiteTimer = seconds
 
     // Reset board
     clearpiece();
@@ -1174,9 +1205,9 @@ turn = true
     }
 
     // Restart timer cleanly
-    
+    Gameover = false
     startTimer();
-    // clear boards
+document.addEventListener('keydown',logic ); 
 },
 
     showWin: function(piece){
@@ -1229,7 +1260,7 @@ startTimer()
 
 White_Timer.innerHTML =  UI.format(UI.WhiteTimer)
 Black_Timer.innerHTML =  UI.format(UI.BlackTimer)
-btn.onclick = UI.Startgame
+
 function clearpiece() {
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
@@ -1283,6 +1314,7 @@ function write(e) {
     UI.update()
     highlightCheck()
      getallmoves()
+     triggerAI();  
     }
     function getallmoves(){
        let color = turn ? "white" : "black";
@@ -1314,3 +1346,25 @@ function write(e) {
 }
     }
 
+
+
+let isPaused = false;
+
+    
+document.addEventListener('keydown',logic );
+
+
+function logic(event)  {
+  if (event.code === 'Space') {
+    event.preventDefault();
+    isPaused = !isPaused;
+    
+    if (isPaused) {
+     
+      UI.pause()// Put your pause logic here (e.g., video.pause())
+    } else {
+     
+      UI.pausegame()
+    }
+  }
+}

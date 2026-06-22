@@ -291,3 +291,19 @@ cursor: pointer;
     transition: transform 0.4s ease, background-color 0.4s ease;
     transform: scale(1.1);
 }
+#pause{
+    position: absolute;
+    left: 2%;
+    top: 2%;
+    height: 50px;
+    width: 60px;
+    background-color: #f0d9b5;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: black solid 1px;
+    border-radius: 6px;
+    font-size: 30px;
+
+}

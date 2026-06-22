@@ -17,7 +17,7 @@
 // ======================================================
 // CONSTANTS
 // ======================================================
-import { getSquares } from "./another.js";
+import { getSquares } from "./Engine.js";
 const PAWN = 1;
 const KNIGHT = 2;
 const BISHOP = 3;
@@ -281,7 +281,7 @@ function getPseudoMoves(board, row, col) {
         for (let [dx, dy] of dirs) {
             let r = row + dx, c = col + dy;
 
-            if (inside(r, c) && !enemy(piece, board[r][c])) {
+            if (inside(r, c) &&  !enemy(piece, board[r][c])) {
                 moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
             }
         }
@@ -329,14 +329,14 @@ function getAllMoves(board, color) {
 // MINIMAX CORE
 // ======================================================
 
-function minimax(board, depth, isMaximizing) {
+function minimax(board, depth, alpha, beta, isMaximizing) {
 
     if (depth === 0) {
         return evaluateGame(board);
     }
 
     const color = isMaximizing ? "white" : "black";
-    const moves = getAllMoves(board, color);
+    const moves = getLegalMoves(board, color);
 
     if (moves.length === 0) {
         return evaluateGame(board);
@@ -351,7 +351,21 @@ function minimax(board, depth, isMaximizing) {
             const newBoard = cloneBoard(board);
             applyMove(newBoard, move);
 
-            best = Math.max(best, minimax(newBoard, depth - 1, false));
+            const score = minimax(
+                newBoard,
+                depth - 1,
+                alpha,
+                beta,
+                false
+            );
+
+            best = Math.max(best, score);
+
+            alpha = Math.max(alpha, best);
+
+            if (beta <= alpha) {
+                break; // prune
+            }
         }
 
         return best;
@@ -365,12 +379,27 @@ function minimax(board, depth, isMaximizing) {
             const newBoard = cloneBoard(board);
             applyMove(newBoard, move);
 
-            best = Math.min(best, minimax(newBoard, depth - 1, true));
+            const score = minimax(
+                newBoard,
+                depth - 1,
+                alpha,
+                beta,
+                true
+            );
+
+            best = Math.min(best, score);
+
+            beta = Math.min(beta, best);
+
+            if (beta <= alpha) {
+                break; // prune
+            }
         }
 
         return best;
     }
 }
+
 
 // ======================================================
 // BEST MOVE PICKER (AI)
@@ -378,7 +407,7 @@ function minimax(board, depth, isMaximizing) {
 
 export function getBestMove(boards) {
 
-    const moves = getAllMoves(boards, "black");
+    const moves = getLegalMoves(boards, "black");
 
     let bestMove = null;
     let bestScore = Infinity;
@@ -388,7 +417,13 @@ export function getBestMove(boards) {
         const newBoard = cloneBoard(boards);
         applyMove(newBoard, move);
 
-        const score = minimax(newBoard, 3, true);
+        const score = minimax(
+    newBoard,
+    3,
+    -Infinity,
+    Infinity,
+    true
+);
 
         if (score < bestScore) {
             bestScore = score;
@@ -397,4 +432,44 @@ export function getBestMove(boards) {
     }
 
     return bestMove;
+}
+
+
+
+
+
+
+
+
+
+function isKingInCheck(board, color) {
+    const kingValue = color === "white" ? KING : -KING;
+    let kingRow, kingCol;
+
+    // Locate the King
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if (board[r][c] === kingValue) {
+                kingRow = r;
+                kingCol = c;
+                break;
+            }
+        }
+    }
+
+    // Check if any enemy piece can attack the King's square
+    // We treat the board as if it's the enemy's turn to see if they can hit the king
+    const enemyColor = color === "white" ? "black" : "white";
+    const enemyMoves = getAllMoves(board, enemyColor);
+
+    return enemyMoves.some(move => move.toRow === kingRow && move.toCol === kingCol);
+}
+
+function getLegalMoves(board, color) {
+    const allMoves = getAllMoves(board, color);
+    return allMoves.filter(move => {
+        const tempBoard = cloneBoard(board);
+        applyMove(tempBoard, move);
+        return !isKingInCheck(tempBoard, color);
+    });
 }
