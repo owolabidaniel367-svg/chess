@@ -1,6 +1,10 @@
 //================================= 
 // CHESS GAME
 //=================================
+if(Number(window.screen.width) < 1530){
+    alert("Yeah em, I didnt design this game for this screen resolution. Please go to the three dots at the side of your browser and reduce the size. You can also use landscape view(If you are using mobile). Thanks :)")
+}
+
 const gameBar = document.getElementById("GameoverBar")
 const gamecont = document.getElementById("gamebody")
 const btn = document.querySelector("#button")
