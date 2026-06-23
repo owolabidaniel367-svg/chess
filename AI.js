@@ -243,7 +243,7 @@ function getPseudoMoves(board, row, col) {
         for (let [dx, dy] of dirs) {
             let r = row + dx, c = col + dy;
 
-            if (inside(r, c) && !enemy(piece, board[r][c])) {
+            if (inside(r, c) && !friendly(piece, board[r][c])) {
                 moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
             }
         }
@@ -281,7 +281,7 @@ function getPseudoMoves(board, row, col) {
         for (let [dx, dy] of dirs) {
             let r = row + dx, c = col + dy;
 
-            if (inside(r, c) &&  !enemy(piece, board[r][c])) {
+            if (inside(r, c) &&   !friendly(piece, board[r][c])) {
                 moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
             }
         }
@@ -472,4 +472,9 @@ function getLegalMoves(board, color) {
         applyMove(tempBoard, move);
         return !isKingInCheck(tempBoard, color);
     });
+}
+function friendly(p1, p2) {
+    return p2 !== 0 &&
+           ((p1 > 0 && p2 > 0) ||
+            (p1 < 0 && p2 < 0));
 }
