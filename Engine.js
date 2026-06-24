@@ -1,6 +1,7 @@
 //================================= 
 // CHESS GAME
 //=================================
+let allMoves = []
 if(Number(window.screen.width) < 1530){
     alert("Yeah em, I actually didnt design this game for this screen resolution. Please go to the three dots at the side of your browser and reduce the size. You can also use landscape view(If you are using mobile). Thanks :)")
 }
@@ -353,10 +354,19 @@ if (squares[x1][y1].dataset.type === "pawn") {
 
     pawnloc[0] = x1;
     pawnloc[1] = y1;
+    const promote = CheckPawnPromote(squares[x1][y1])
 
-    if (CheckPawnPromote(squares[x1][y1])) {
+    if (promote == true) {
           
         return;
+ }
+    if(promote == "done"){
+         turn = !turn;
+    UI.update();
+    highlightCheck();
+    getallmoves();
+    triggerAI();
+    return;
     }
 }
 
@@ -391,7 +401,7 @@ function triggerAI() {
 
         aiThinking = false;
 
-    }, 300);
+    }, 30);
 }
 function line(x,y,straight,diagonal){
 
@@ -1288,12 +1298,10 @@ if(color==="white"){
     return true
   }
 }
-else{
-   if(x===7){
-    showboard(color)
-    return true
-  }
-} }
+if(color === "black" && x === 7){
+        set("queen","black",x,y);
+        return "Done";
+    } }
 return false
 }
 function showboard(color){
@@ -1338,15 +1346,15 @@ function write(e) {
     if (Iskingchecked(color)) {
 
         message = color === "black"
-            ? "Checkmate! <br> White won"
-            : "Checkmate! <br> Black won";
+            ? "Checkmate! <br> You won"
+            : "Checkmate! <br> AI won, What a shame";
 
     } else {
 
         message = "Stalemate!";
     }
-
-    UI.EndGame(message);
+setTimeout(()=>{UI.EndGame(message);},1000)
+    // UI.EndGame(message);
 }
     }
 

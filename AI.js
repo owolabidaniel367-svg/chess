@@ -1,5 +1,5 @@
 // ======================================================
-// CHESS AI ENGINE (MINIMAX CORE)
+// CHESS AI ENGINE (MINIMAX CORE) Yayyyyyy
 // ======================================================
 
 // Piece encoding system:
@@ -24,6 +24,47 @@ const BISHOP = 3;
 const ROOK = 4;
 const QUEEN = 5;
 const KING = 6;
+// piece evaluation table 
+const knightTable = [
+    [-5,-4,-3,-3,-3,-3,-4,-5],
+    [-4,-2, 0, 0, 0, 0,-2,-4],
+    [-3, 0, 1, 2, 2, 1, 0,-3],
+    [-3, 1, 2, 3, 3, 2, 1,-3],
+    [-3, 0, 2, 3, 3, 2, 0,-3],
+    [-3, 1, 1, 2, 2, 1, 1,-3],
+    [-4,-2, 0, 1, 1, 0,-2,-4],
+    [-5,-4,-3,-3,-3,-3,-4,-5]
+];
+const pawnTable = [
+    [7,7,7,7,7,7,7,7],
+    [5,5,5,5,5,5,5,5],
+    [1,1,2,3,3,2,1,1],
+    [0,0,0,2,2,0,0,0],
+    [0,0,0,-2,-2,0,0,0],
+    [1,-1,-2,0,0,-2,-1,1],
+    [1,2,2,-2,-2,2,2,1],
+    [0,0,0,0,0,0,0,0]
+];
+const queenTable = [
+  [-20, -10, -10,  -5,  -5, -10, -10, -20],
+  [-10,   0,   0,   0,   0,   0,   0, -10],
+  [-10,   0,   5,   5,   5,   5,   0, -10],
+  [ -5,   0,   5,   5,   5,   5,   0,  -5],
+  [  0,   0,   5,   5,   5,   5,   0,  -5],
+  [-10,   5,   5,   5,   5,   5,   0, -10],
+  [-10,   0,   5,   0,   0,   0,   0, -10],
+  [-20, -10, -10,  -5,  -5, -10, -10, -20]
+]
+const rookTable = [
+  [ 0,  0,  0,  5,  5,  0,  0,  0],
+  [-5,  0,  0,  0,  0,  0,  0, -5],
+  [-5,  0,  0,  0,  0,  0,  0, -5],
+  [-5,  0,  0,  0,  0,  0,  0, -5],
+  [-5,  0,  0,  0,  0,  0,  0, -5],
+  [-5,  0,  0,  0,  0,  0,  0, -5],
+  [ 5, 10, 10, 10, 10, 10, 10,  5],
+  [ 0,  0,  0,  0,  0,  0,  0,  0]
+]
 
 // ======================================================
 // INITIAL BOARD (8x8 matrix)
@@ -108,7 +149,7 @@ setPiece();
 // ======================================================
 
 const pieceValue = {
-    1: 1,
+    1: 0.2,
     2: 3,
     3: 3,
     4: 5,
@@ -122,7 +163,7 @@ const pieceValue = {
 
 function evaluateGame(board) {
     let score = 0;
-
+// if(!checkstategame(board)){
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
 
@@ -130,11 +171,13 @@ function evaluateGame(board) {
             if (p === 0) continue;
 
             const value = pieceValue[Math.abs(p)];
-            score += p > 0 ? value : -value;
+            score += p > 0 ? (value + getPositionalBonus(p, r, c) ) : (-value  - getPositionalBonus(p, r, c)) ;
         }
     }
-
-    return score;
+     return score;
+// }
+//    return checkstategame(board)
+   
 }
 
 // ======================================================
@@ -213,11 +256,28 @@ function getPseudoMoves(board, row, col) {
             moves.push({ fromRow: row, fromCol: col, toRow: row + dir, toCol: col });
 
             const start = piece > 0 ? 6 : 1;
+                const last_square = piece > 0 ? 1 : 6;
+       if(row === last_square){
+        let movement  = piece>0? -1:1
+        let r = movement + row
+      moves.push({
+    fromRow: row,
+    fromCol: col,
+    toRow: r,
+    toCol: col,
+    promotion: QUEEN
+});
 
             if (row === start && board[row + 2 * dir][col] === 0) {
                 moves.push({ fromRow: row, fromCol: col, toRow: row + 2 * dir, toCol: col });
             }
+
+            
         }
+   
+
+       }
+
 
         for (let offset of [-1, 1]) {
             let r = row + dir;
@@ -295,12 +355,34 @@ function getPseudoMoves(board, row, col) {
 // ======================================================
 
 function applyMove(board, move) {
-    const piece = board[move.fromRow][move.fromCol];
+ let piece = board[move.fromRow][move.fromCol];
+     if (move.promotion) 
+    piece = piece > 0
+        ? move.promotion
+        : -move.promotion;
+   
+
+    
+   
+
+
+    board[move.fromRow][move.fromCol] = 0;
+
+
+    // White pawn promotes
+    // if (piece === 1 && move.toRow === 0) {
+    //     piece = 5; // queen
+  
+    // }
+
+    // // Black pawn promotes
+    // if (piece === -1 && move.toRow === 7) {
+    //     piece = -5; // queen
+
+    // }
 
     board[move.toRow][move.toCol] = piece;
-    board[move.fromRow][move.fromCol] = 0;
 }
-
 // ======================================================
 // ALL MOVES FOR COLOR
 // ======================================================
@@ -337,10 +419,28 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
 
     const color = isMaximizing ? "white" : "black";
     const moves = getLegalMoves(board, color);
+    moves.sort((a,b)=>scoreMove(b,board) - scoreMove(a,board))
+    
+// isKingInCheck(board,color)
+//     if (moves.length === 0 && color == "white") {
+//         // return evaluateGame(board);
+//         return -10000000
+//     }
+//      if (moves.length === 0 && color == "black") {
+//         // return evaluateGame(board);
+//         return 10000000
+//     }
 
-    if (moves.length === 0) {
-        return evaluateGame(board);
+    if(moves.length === 0){
+        if(isKingInCheck(board,"white")){
+            return -100000000
+        }
+        if(isKingInCheck(board,"black")){
+            return 1000000000
+        }
+        return 0
     }
+    
 
     if (isMaximizing) {
 
@@ -348,16 +448,27 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
 
         for (let move of moves) {
 
-            const newBoard = cloneBoard(board);
-            applyMove(newBoard, move);
+            // const newBoard = cloneBoard(board);
+            // applyMove(newBoard, move);
+     const captured = makeMove(board, move);
 
-            const score = minimax(
-                newBoard,
-                depth - 1,
-                alpha,
-                beta,
-                false
-            );
+    const score = minimax(
+        board,
+        depth - 1,
+        alpha,
+        beta,
+        false
+    );
+
+    undoMove(board, move, captured);
+
+            // const score = minimax(
+            //     newBoard,
+            //     depth - 1,
+            //     alpha,
+            //     beta,
+            //     false
+            // );
 
             best = Math.max(best, score);
 
@@ -376,16 +487,27 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
 
         for (let move of moves) {
 
-            const newBoard = cloneBoard(board);
-            applyMove(newBoard, move);
+            // const newBoard = cloneBoard(board);
+            // applyMove(newBoard, move);
 
-            const score = minimax(
-                newBoard,
-                depth - 1,
-                alpha,
-                beta,
-                true
-            );
+            // const score = minimax(
+            //     newBoard,
+            //     depth - 1,
+            //     alpha,
+            //     beta,
+            //     true
+            // );
+            const captured = makeMove(board, move);
+
+    const score = minimax(
+        board,
+        depth - 1,
+        alpha,
+        beta,
+        true
+    );
+
+    undoMove(board, move, captured);
 
             best = Math.min(best, score);
 
@@ -419,7 +541,7 @@ export function getBestMove(boards) {
 
         const score = minimax(
     newBoard,
-    3,
+    4,
     -Infinity,
     Infinity,
     true
@@ -478,3 +600,55 @@ function friendly(p1, p2) {
            ((p1 > 0 && p2 > 0) ||
             (p1 < 0 && p2 < 0));
 }
+function scoreMove(move, board) {
+    const victim = board[move.toRow][move.toCol];
+
+    if (victim === 0) return 0;
+
+    return pieceValue[Math.abs(victim)];
+}
+function makeMove(board, move) {
+    const captured = board[move.toRow][move.toCol];
+
+    board[move.toRow][move.toCol] =
+        board[move.fromRow][move.fromCol];
+
+    board[move.fromRow][move.fromCol] = 0;
+
+    return captured;
+}
+
+function undoMove(board, move, captured) {
+    board[move.fromRow][move.fromCol] =
+        board[move.toRow][move.toCol];
+
+    board[move.toRow][move.toCol] = captured;
+}
+function getPositionalBonus(piece, row, col) {
+    const type = Math.abs(piece);
+
+    switch (type) {
+        case PAWN:
+            return piece > 0
+                ? pawnTable[row][col]
+                : pawnTable[7 - row][col];
+
+        case KNIGHT:
+            return piece > 0
+                ? knightTable[row][col]
+                : knightTable[7 - row][col];
+        case QUEEN:
+          return piece > 0
+                ? queenTable[row][col]
+                : queenTable[7 - row][col];
+        case ROOK:
+             return piece > 0
+                ? rookTable[row][col]
+                : rookTable[7 - row][col];
+        default:
+            return 0;
+    }
+}
+
+ 
+   
