@@ -3,7 +3,7 @@
 //=================================
 let allMoves = []
 if(Number(window.screen.width) < 1530){
-    alert("Yeah em, I actually didnt design this game for this screen resolution. Please go to the three dots at the side of your browser and reduce the size. You can also use landscape view(If you are using mobile). Thanks :)")
+    alert("Yeah em, I actually didn't design this game for this screen resolution. Please go to the three dots at the side of your browser and reduce the size. You can also use landscape view(If you are using mobile). Thanks :)")
 }
 
 const gameBar = document.getElementById("GameoverBar")
