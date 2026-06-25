@@ -174,9 +174,10 @@ function evaluateGame(board) {
             score += p > 0 ? (value + getPositionalBonus(p, r, c) ) : (-value  - getPositionalBonus(p, r, c)) ;
         }
     }
+   
      return score;
 // }
-//    return checkstategame(board)
+
    
 }
 
@@ -412,34 +413,24 @@ function getAllMoves(board, color) {
 // ======================================================
 
 function minimax(board, depth, alpha, beta, isMaximizing) {
-
-    if (depth === 0) {
-        return evaluateGame(board);
+  
+  if (depth === 0) {
+        return quiescence(board, alpha, beta, isMaximizing);
     }
 
+      
     const color = isMaximizing ? "white" : "black";
     const moves = getLegalMoves(board, color);
     moves.sort((a,b)=>scoreMove(b,board) - scoreMove(a,board))
-    
-// isKingInCheck(board,color)
-//     if (moves.length === 0 && color == "white") {
-//         // return evaluateGame(board);
-//         return -10000000
-//     }
-//      if (moves.length === 0 && color == "black") {
-//         // return evaluateGame(board);
-//         return 10000000
-//     }
 
-    if(moves.length === 0){
-        if(isKingInCheck(board,"white")){
-            return -100000000
-        }
-        if(isKingInCheck(board,"black")){
-            return 1000000000
-        }
-        return 0
+  if (moves.length === 0) {
+    if (isKingInCheck(board, color)) {
+        return isMaximizing ? -100000 + depth : 100000 - depth;
     }
+
+    return 0;
+}
+    
     
 
     if (isMaximizing) {
@@ -541,7 +532,7 @@ export function getBestMove(boards) {
 
         const score = minimax(
     newBoard,
-    4,
+    3,
     -Infinity,
     Infinity,
     true
@@ -587,14 +578,29 @@ function isKingInCheck(board, color) {
     return enemyMoves.some(move => move.toRow === kingRow && move.toCol === kingCol);
 }
 
+// function getLegalMoves(board, color) {
+//     const allMoves = getAllMoves(board, color);
+//     return allMoves.filter(move => {
+//         const tempBoard = cloneBoard(board);
+//         applyMove(tempBoard, move);
+//         return !isKingInCheck(tempBoard, color);
+//     });
+// }
+// Optimized getLegalMoves
 function getLegalMoves(board, color) {
     const allMoves = getAllMoves(board, color);
-    return allMoves.filter(move => {
-        const tempBoard = cloneBoard(board);
-        applyMove(tempBoard, move);
-        return !isKingInCheck(tempBoard, color);
-    });
+    const legal = [];
+    
+    for (let move of allMoves) {
+        const captured = makeMove(board, move);
+        if (!isKingInCheck(board, color)) {
+            legal.push(move);
+        }
+        undoMove(board, move, captured); // Backtrack immediately
+    }
+    return legal;
 }
+
 function friendly(p1, p2) {
     return p2 !== 0 &&
            ((p1 > 0 && p2 > 0) ||
@@ -649,6 +655,45 @@ function getPositionalBonus(piece, row, col) {
             return 0;
     }
 }
-
+// I love this function
  
-   
+function quiescence(board, alpha, beta, isMaximizing) {
+    // Standard evaluation for the current position
+    let standPat = evaluateGame(board);
+
+    if (isMaximizing) {
+        if (standPat >= beta) return beta;
+        if (standPat > alpha) alpha = standPat;
+
+        // Get only capturing moves
+        const moves = getLegalMoves(board, "white").filter(m => isCapture(board, m));
+        
+        for (let move of moves) {
+            const captured = makeMove(board, move);
+            let score = quiescence(board, alpha, beta, false);
+            undoMove(board, move, captured);
+
+            if (score >= beta) return beta;
+            if (score > alpha) alpha = score;
+        }
+        return alpha;
+    } else {
+        if (standPat <= alpha) return alpha;
+        if (standPat < beta) beta = standPat;
+
+        const moves = getLegalMoves(board, "black").filter(m => isCapture(board, m));
+
+        for (let move of moves) {
+            const captured = makeMove(board, move);
+            let score = quiescence(board, alpha, beta, true);
+            undoMove(board, move, captured);
+
+            if (score <= alpha) return alpha;
+            if (score < beta) beta = score;
+        }
+        return beta;
+    }
+}
+function isCapture(board, move) {
+    return board[move.toRow][move.toCol] !== 0;
+}

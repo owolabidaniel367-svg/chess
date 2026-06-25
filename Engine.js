@@ -403,6 +403,7 @@ function triggerAI() {
 
     }, 30);
 }
+
 function line(x,y,straight,diagonal){
 
     let moves = []
@@ -1373,7 +1374,7 @@ function logic(event)  {
     
     if (isPaused) {
      
-      UI.pause()// Put your pause logic here (e.g., video.pause())
+      UI.pause()
     } else {
      
       UI.pausegame()
