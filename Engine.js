@@ -3,7 +3,7 @@
 //=================================
 
 
-
+alert("version 1.0")
 const gameBar = document.getElementById("GameoverBar")
 const gamecont = document.getElementById("gamebody")
 const btn = document.querySelector("#button")
