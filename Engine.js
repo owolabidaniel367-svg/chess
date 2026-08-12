@@ -1,10 +1,8 @@
 //================================= 
 // CHESS GAME
 //=================================
-let allMoves = []
-if(Number(window.screen.width) < 1530){
-    alert("Yeah em, I actually didn't design this game for this screen resolution. Please go to the three dots at the side of your browser and reduce the size. You can also use landscape view(If you are using mobile). Thanks :)")
-}
+
+
 
 const gameBar = document.getElementById("GameoverBar")
 const gamecont = document.getElementById("gamebody")
@@ -14,10 +12,11 @@ const msg = document.getElementById("message")
 const msg2 = document.getElementById("button")
 const grid = document.getElementById("grid")
 let Gameover = false
+let time 
 
 import { getBestMove,
     piece
- } from "./AI.js";
+ } from "./AI2.js";
 let aiThinking = false; 
 let clicked
 let king
@@ -26,6 +25,18 @@ let pawnloc = [1,2]
 let seconds = 600
 const squares = []
 let options = []
+export const gameState = {
+    board:getSquares(),
+
+    whiteKingMoved: false,
+    blackKingMoved: false,
+
+    whiteLeftRookMoved: false,
+    whiteRightRookMoved: false,
+
+    blackLeftRookMoved: false,
+    blackRightRookMoved: false
+};
 //===========================================================
 // Set up the pawn promotion bar
 //===========================================================
@@ -272,7 +283,7 @@ function handleclick(e){
         let fromX = Number(clicked.dataset.row)
         let fromY = Number(clicked.dataset.column)
 
-        movePiece(x,y,fromX,fromY,color,type)
+        movePiece(fromX,fromY,x,y,color,type)
 
         clear()
 
@@ -319,67 +330,88 @@ function clear(){
 // MOVE PIECE
 // ==========================================================
 
-function movePiece(x1,y1,x2,y2,color,type){
+function movePiece(x1, y1, x2, y2, color, type, silent = false) {
 
     // save captured piece
     let capturedPiece = null
 
-    if(squares[x1][y1].dataset.color){
-
+    if (squares[x2][y2].dataset.color) {
         capturedPiece = {
-
-            type: squares[x1][y1].dataset.type,
-            color: squares[x1][y1].dataset.color,
-            symbol: squares[x1][y1].innerHTML
+            type: squares[x2][y2].dataset.type,
+            color: squares[x2][y2].dataset.color,
+            symbol: squares[x2][y2].innerHTML
         }
     }
 
+    // ---- update gameState castling-rights flags BEFORE moving ----
+
+    if (type === "king") {
+        if (color === "white") {
+            gameState.whiteKingMoved = true
+        } else {
+            gameState.blackKingMoved = true
+        }
+    }
+
+    if (type === "rook") {
+        if (color === "white") {
+            if (x1 === 7 && y1 === 0) gameState.whiteLeftRookMoved = true
+            if (x1 === 7 && y1 === 7) gameState.whiteRightRookMoved = true
+        } else {
+            if (x1 === 0 && y1 === 0) gameState.blackLeftRookMoved = true
+            if (x1 === 0 && y1 === 7) gameState.blackRightRookMoved = true
+        }
+    }
+
+    // if a rook gets captured on its home square, it also loses castling rights
+    if (capturedPiece && capturedPiece.type === "rook") {
+        if (x2 === 7 && y2 === 0) gameState.whiteLeftRookMoved = true
+        if (x2 === 7 && y2 === 7) gameState.whiteRightRookMoved = true
+        if (x2 === 0 && y2 === 0) gameState.blackLeftRookMoved = true
+        if (x2 === 0 && y2 === 7) gameState.blackRightRookMoved = true
+    }
+
     // move piece
-    set(type,color,x1,y1)
+    set(type, color, x2, y2)
 
     // mark moved
-    squares[x1][y1].dataset.moved = "true"
+    squares[x2][y2].dataset.moved = "true"
 
-    remove(x2,y2)
+    remove(x1, y1)
 
     // show captured piece
-    if(capturedPiece){
-
+    if (capturedPiece) {
         UI.showWin(capturedPiece)
-       
     }
-    
+   if(silent) return
     // switch turn
-if (squares[x1][y1].dataset.type === "pawn") {
+    if (type === "pawn") {
 
-    pawnloc[0] = x1;
-    pawnloc[1] = y1;
-    const promote = CheckPawnPromote(squares[x1][y1])
+        pawnloc[0] = x2;
+        pawnloc[1] = y2;
+        const promote = CheckPawnPromote(squares[x2][y2])
 
-    if (promote == true) {
-          
-        return;
- }
-    if(promote == "done"){
-         turn = !turn;
+        if (promote == true) {
+            return;
+        }
+        if (promote == "done") {
+            turn = !turn;
+            UI.update();
+            highlightCheck();
+            getallmoves();
+            triggerAI();
+            return;
+        }
+    }
+
+    turn = !turn;
+
     UI.update();
+
     highlightCheck();
     getallmoves();
     triggerAI();
-    return;
-    }
 }
-
-turn = !turn;
-
-UI.update();
-
-highlightCheck();
-getallmoves();
-triggerAI(); 
-
-}
-
 // ==========================================================
 // LINE MOVEMENT
 // ==========================================================
@@ -389,11 +421,12 @@ function triggerAI() {
     if (aiThinking) return;
 
     aiThinking = true;
-
+// let start = performance.now()
+startAIClock()
     setTimeout(() => {
 
-        const boardState = getBoardState();
-        const bestMove = getBestMove(boardState);
+        gameState.board = getBoardState();
+        const bestMove = getBestMove(gameState,"black");
 
         if (bestMove) {
             applyAIMove(bestMove);
@@ -402,6 +435,13 @@ function triggerAI() {
         aiThinking = false;
 
     }, 30);
+    stopAIClock()
+// let end = performance.now()
+// time = (end-start)/1000
+// UI.BlackTimer = Math.floor(UI.BlackTimer - time)
+
+// Black_Timer.innerHTML = UI.format(UI.BlackTimer)
+
 }
 
 function line(x,y,straight,diagonal){
@@ -689,14 +729,54 @@ function applyAIMove(move) {
         return;
     }
 
+    const color = from.dataset.color;
+    const type = from.dataset.type;
+
+    // ---- handle castling: move the rook first, king moves via movePiece below ----
+    if (move.castle) {
+        const row = move.fromRow; // 7 for white, 0 for black
+
+        if (move.castle === "king") {
+            // rook goes from h-file (col 7) to f-file (col 5)
+            const rookFrom = squares[row][7];
+            movePiece(row, 7, row, 5, rookFrom.dataset.color, rookFrom.dataset.type,true);
+        } else {
+            // queen side: rook goes from a-file (col 0) to d-file (col 3)
+            const rookFrom = squares[row][0];
+            movePiece(row, 0, row, 3, rookFrom.dataset.color, rookFrom.dataset.type,true);
+        }
+    }
+
+    // king (or any normal piece) move — origin first, destination second
     movePiece(
-        move.toRow,
-        move.toCol,
         move.fromRow,
         move.fromCol,
-        from.dataset.color,
-        from.dataset.type
+        move.toRow,
+        move.toCol,
+        color,
+        type
     );
+   const stringify = {
+    1: "pawn",
+    2: "knight",
+    3: "bishop",
+    4: "rook",
+    5 :"queen",
+    6: "king"
+   }
+
+
+
+   
+    // ---- handle promotion ----
+    if (move.promotion) {
+        
+        // translate to your UI's string type, then update the square + gameState
+        const promotedType = stringify[Math.abs(move.promotion)];
+        set(promotedType, color, move.toRow, move.toCol);
+        squares[move.toRow][move.toCol].dataset.type = promotedType;
+        // update visuals (symbol/innerHTML) to match, however your UI renders pieces
+    }
 }
 function GetattackMoves(board){
 
@@ -1144,10 +1224,7 @@ const UI = {
 
         else{
 
-            this.BlackTimer--
-
-            Black_Timer.innerHTML =
-                this.format(this.BlackTimer)
+            
         }
         if(this.BlackTimer <= 0 || this.WhiteTimer <= 0){
             message = turn? "White lost by time":"Black lost by time"
@@ -1380,4 +1457,26 @@ function logic(event)  {
       UI.pausegame()
     }
   }
+}
+let aiClock = null;
+
+function startAIClock() {
+    if (aiClock) return;
+
+    aiClock = setInterval(() => {
+        if (!turn && !Gameover) {
+            UI.BlackTimer = Math.max(0, UI.BlackTimer - 1);
+            Black_Timer.innerHTML = UI.format(UI.BlackTimer);
+
+            if (UI.BlackTimer <= 0) {
+                UI.EndGame("Black lost by time");
+                stopAIClock();
+            }
+        }
+    }, 1000);
+}
+
+function stopAIClock() {
+    clearInterval(aiClock);
+    aiClock = null;
 }

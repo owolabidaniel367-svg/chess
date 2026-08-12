@@ -127,42 +127,42 @@ function set(type, color, row, col) {
 // INITIAL SETUP
 // ======================================================
 
-function setPiece() {
+// function setPiece() {
 
-    // pawns
-    for (let i = 0; i < 8; i++) {
-        set("pawn", "white", 6, i);
-        set("pawn", "black", 1, i);
-    }
+//     // pawns
+//     for (let i = 0; i < 8; i++) {
+//         set("pawn", "white", 6, i);
+//         set("pawn", "black", 1, i);
+//     }
 
-    // rooks
-    set("rook", "white", 7, 0);
-    set("rook", "white", 7, 7);
-    set("rook", "black", 0, 0);
-    set("rook", "black", 0, 7);
+//     // rooks
+//     set("rook", "white", 7, 0);
+//     set("rook", "white", 7, 7);
+//     set("rook", "black", 0, 0);
+//     set("rook", "black", 0, 7);
 
-    // knights
-    set("knight", "white", 7, 1);
-    set("knight", "white", 7, 6);
-    set("knight", "black", 0, 1);
-    set("knight", "black", 0, 6);
+//     // knights
+//     set("knight", "white", 7, 1);
+//     set("knight", "white", 7, 6);
+//     set("knight", "black", 0, 1);
+//     set("knight", "black", 0, 6);
 
-    // bishops
-    set("bishop", "white", 7, 2);
-    set("bishop", "white", 7, 5);
-    set("bishop", "black", 0, 2);
-    set("bishop", "black", 0, 5);
+//     // bishops
+//     set("bishop", "white", 7, 2);
+//     set("bishop", "white", 7, 5);
+//     set("bishop", "black", 0, 2);
+//     set("bishop", "black", 0, 5);
 
-    // queens
-    set("queen", "white", 7, 3);
-    set("queen", "black", 0, 3);
+//     // queens
+//     set("queen", "white", 7, 3);
+//     set("queen", "black", 0, 3);
 
-    // kings
-    set("king", "white", 7, 4);
-    set("king", "black", 0, 4);
-}
+//     // kings
+//     set("king", "white", 7, 4);
+//     set("king", "black", 0, 4);
+// }
 
-setPiece();
+// setPiece();
 
 // ======================================================
 // PIECE VALUES (EVALUATION FUNCTION)
@@ -538,7 +538,7 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
 // BEST MOVE PICKER (AI)
 // ======================================================
 
-export function getBestMove(boards) {
+export function getBestMove(boards,color="black") {
 
     const moves = getLegalMoves(boards, "black");
 
