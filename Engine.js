@@ -740,11 +740,13 @@ function applyAIMove(move) {
             // rook goes from h-file (col 7) to f-file (col 5)
             const rookFrom = squares[row][7];
             movePiece(row, 7, row, 5, rookFrom.dataset.color, rookFrom.dataset.type,true);
+            
         } else {
             // queen side: rook goes from a-file (col 0) to d-file (col 3)
             const rookFrom = squares[row][0];
             movePiece(row, 0, row, 3, rookFrom.dataset.color, rookFrom.dataset.type,true);
         }
+        
     }
 
     // king (or any normal piece) move — origin first, destination second
